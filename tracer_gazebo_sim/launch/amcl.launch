@@ -1,0 +1,24 @@
+<launch>
+  <node name="map_server" pkg="map_server" type="map_server" args="$(find tracer_gazebo_sim)/maps/map.yaml" output="screen"/>
+
+  <node name="amcl" pkg="amcl" type="amcl" output="screen">
+    <param name="odom_frame_id" value="odom"/>
+    <param name="base_frame_id" value="base_link"/>
+    <param name="global_frame_id" value="map"/>
+    <param name="scan_topic" value="/merged_lidar"/>
+    <param name="update_min_d" value="0.2"/>
+    <param name="update_min_a" value="0.1"/>
+    <param name="initial_pose_x" value="0.0"/>
+    <param name="initial_pose_y" value="0.0"/>
+    <param name="initial_pose_a" value="0.0"/>
+    <param name="min_particles" value="100"/>
+    <param name="max_particles" value="500"/>
+    <param name="kld_err" value="0.05"/>
+    <param name="kld_z" value="0.99"/>
+  </node>
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find tracer_gazebo_sim)/rviz/config.rviz" output="screen"/>
+
+  <node pkg="tf" type="static_transform_publisher" name="laser_to_base_link" args="0 0 0 0 0 0 base_link laser_frame 100"/>
+</launch>
+
