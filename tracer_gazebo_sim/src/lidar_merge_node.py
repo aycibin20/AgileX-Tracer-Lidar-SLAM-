@@ -4,7 +4,7 @@ import rospy
 from sensor_msgs.msg import LaserScan
 import numpy as np
 
-# Global değişkenler
+
 front_scan = None
 rear_scan = None
 
@@ -24,7 +24,7 @@ def merge_lidar_data():
 
     pub = rospy.Publisher('/merged_lidar', LaserScan, queue_size=10)
 
-    rate = rospy.Rate(20)  # Default: 20 Hz
+    rate = rospy.Rate(20)  
 
     while not rospy.is_shutdown():
         if front_scan is None or rear_scan is None:
@@ -35,7 +35,7 @@ def merge_lidar_data():
         merged_scan.header.stamp = rospy.Time.now()
         merged_scan.header.frame_id = 'base_link'
 
-        # Genel tarama özelliklerini ayarla
+        
         merged_scan.angle_min = front_scan.angle_min
         merged_scan.angle_max = front_scan.angle_min + len(front_scan.ranges) * front_scan.angle_increment
         merged_scan.angle_increment = front_scan.angle_increment
@@ -44,22 +44,22 @@ def merge_lidar_data():
         merged_scan.range_min = min(front_scan.range_min, rear_scan.range_min)
         merged_scan.range_max = max(front_scan.range_max, rear_scan.range_max)
 
-        # Ön ve arka lidar verilerini hazırla (NaN ve Inf değerlerini işleyerek)
+        
         front_ranges = [r if not np.isinf(r) and not np.isnan(r) else front_scan.range_max for r in front_scan.ranges]
         rear_ranges = [r if not np.isinf(r) and not np.isnan(r) else rear_scan.range_max for r in rear_scan.ranges[::-1]]
 
-        # Ranges listesini birleştirirken en küçük mesafeyi seç
+        
         merged_ranges = [
             min(front, rear) for front, rear in zip(front_ranges, rear_ranges)
         ]
 
-        # Birleşik veriyi ekle
+        
         merged_scan.ranges = merged_ranges
         merged_scan.intensities = [
             max(front_int, rear_int) for front_int, rear_int in zip(front_scan.intensities, rear_scan.intensities[::-1])
         ]
 
-        # Birleşik veriyi yayınla
+        
         pub.publish(merged_scan)
         rate.sleep()
 
